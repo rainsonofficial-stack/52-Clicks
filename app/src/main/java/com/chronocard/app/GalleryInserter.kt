@@ -60,7 +60,7 @@ object GalleryInserter {
             put(MediaStore.Images.Media.DATE_ADDED, targetMillis / 1000)
             put(MediaStore.Images.Media.DATE_MODIFIED, targetMillis / 1000)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/Camera")
                 put(MediaStore.Images.Media.IS_PENDING, 1)
             }
         }
