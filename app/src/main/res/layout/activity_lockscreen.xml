@@ -15,14 +15,14 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#33000000" />
+        android:background="#44000000" />
 
     <ImageView
         android:id="@+id/ivLock"
-        android:layout_width="26dp"
-        android:layout_height="26dp"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
         android:layout_gravity="center_horizontal|top"
-        android:layout_marginTop="56dp"
+        android:layout_marginTop="52dp"
         android:src="@drawable/ic_lock"
         app:tint="@android:color/white" />
 
@@ -31,7 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|top"
-        android:layout_marginTop="380dp"
+        android:layout_marginTop="120dp"
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
@@ -52,22 +52,33 @@
             android:layout_marginTop="4dp" />
     </LinearLayout>
 
+    <View
+        android:id="@+id/rippleView"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="143dp"
+        android:background="@drawable/bg_ripple_circle"
+        android:visibility="invisible" />
+
     <ImageView
         android:id="@+id/ivFingerprint"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_gravity="center_horizontal|bottom"
-        android:layout_marginBottom="150dp"
-        android:src="@drawable/ic_fingerprint"
-        android:alpha="0.85" />
+        android:layout_marginBottom="155dp"
+        android:src="@drawable/ic_fingerprint" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="46dp"
+        android:layout_marginBottom="44dp"
+        android:layout_marginHorizontal="20dp"
         android:orientation="vertical"
-        android:paddingHorizontal="28dp">
+        android:background="@drawable/bg_music_widget"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -77,8 +88,8 @@
 
             <ImageView
                 android:id="@+id/ivPhone"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:src="@drawable/ic_phone"
                 android:alpha="0" />
 
@@ -86,7 +97,7 @@
                 android:layout_width="0dp"
                 android:layout_height="20dp"
                 android:layout_weight="1"
-                android:layout_marginHorizontal="16dp"
+                android:layout_marginHorizontal="12dp"
                 android:clipChildren="true">
                 <TextView
                     android:id="@+id/tvTrack"
@@ -99,8 +110,8 @@
 
             <ImageView
                 android:id="@+id/ivCamera"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:src="@drawable/ic_camera"
                 android:alpha="0" />
         </LinearLayout>
@@ -111,8 +122,8 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:layout_marginTop="4dp"
-            android:textColor="@android:color/white"
-            android:textSize="13sp" />
+            android:textColor="#CCffffff"
+            android:textSize="12sp" />
     </LinearLayout>
 
 </FrameLayout>
