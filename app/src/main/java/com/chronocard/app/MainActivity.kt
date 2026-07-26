@@ -66,11 +66,26 @@ class MainActivity : AppCompatActivity() {
         rgBackdate.setOnCheckedChangeListener { _, checkedId ->
             btnCustomTime.visibility = if (checkedId == R.id.rbCustom) android.view.View.VISIBLE else android.view.View.GONE
         }
-        (findViewById<RadioButton>(R.id.rbH3)).isChecked = true
+
+        // Restore last-used backdate option
+        if (SetupPrefs.getCustomMillis(this) > 0) {
+            customCalendar.timeInMillis = SetupPrefs.getCustomMillis(this)
+        }
+        when (SetupPrefs.getBackdate(this)) {
+            SetupPrefs.Backdate.H3 -> findViewById<RadioButton>(R.id.rbH3).isChecked = true
+            SetupPrefs.Backdate.H10 -> findViewById<RadioButton>(R.id.rbH10).isChecked = true
+            SetupPrefs.Backdate.H24 -> findViewById<RadioButton>(R.id.rbH24).isChecked = true
+            SetupPrefs.Backdate.D3 -> findViewById<RadioButton>(R.id.rbD3).isChecked = true
+            SetupPrefs.Backdate.CUSTOM -> findViewById<RadioButton>(R.id.rbCustom).isChecked = true
+        }
 
         btnCustomTime.setOnClickListener { showCustomTimePicker() }
 
-        findViewById<RadioButton>(R.id.rbPasscode).isChecked = true
+        // Restore last-used input mode
+        when (SetupPrefs.getMode(this)) {
+            SetupPrefs.Mode.PASSCODE -> findViewById<RadioButton>(R.id.rbPasscode).isChecked = true
+            SetupPrefs.Mode.TAP -> findViewById<RadioButton>(R.id.rbTap).isChecked = true
+        }
 
         findViewById<android.widget.Button>(R.id.btnPerform).setOnClickListener {
             saveBackdateSelection(rgBackdate.checkedRadioButtonId)
