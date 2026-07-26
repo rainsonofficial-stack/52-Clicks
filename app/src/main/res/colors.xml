@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="aod_dim">#B3FFFFFF</color>
+    <color name="lock_scrim_top">#66000000</color>
+    <color name="lock_scrim_bottom">#99000000</color>
+    <color name="accent">#4CAF93</color>
+</resources>
