@@ -32,10 +32,10 @@
 
     <ImageView
         android:id="@+id/ivFingerprint"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_gravity="center_horizontal|bottom"
-        android:layout_marginBottom="150dp"
+        android:layout_marginBottom="155dp"
         android:src="@drawable/ic_fingerprint"
         android:alpha="0.55" />
 
@@ -43,9 +43,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="46dp"
+        android:layout_marginBottom="44dp"
+        android:layout_marginHorizontal="20dp"
         android:orientation="vertical"
-        android:paddingHorizontal="28dp">
+        android:background="@drawable/bg_music_widget_aod"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp">
 
         <FrameLayout
             android:layout_width="match_parent"
