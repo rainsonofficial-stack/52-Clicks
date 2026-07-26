@@ -7,6 +7,8 @@ import android.os.Handler
 import android.os.Looper
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -17,7 +19,7 @@ import java.util.*
 class AodActivity : AppCompatActivity() {
 
     private val handler = Handler(Looper.getMainLooper())
-    private var timerSecond = 1 // cycles 1..13, i.e. "3:01".."3:13"
+    private var timerSecond = 1
     private lateinit var tvTimer: TextView
     private lateinit var tvClock: TextView
     private lateinit var tvDate: TextView
@@ -42,6 +44,7 @@ class AodActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_aod)
+        goFullscreen()
 
         root = findViewById(R.id.root)
         tvTimer = findViewById(R.id.tvTimer)
@@ -60,6 +63,22 @@ class AodActivity : AppCompatActivity() {
                 onScreenTap(event.x, event.y)
             }
             true
+        }
+    }
+
+    private fun goFullscreen() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            window.insetsController?.let {
+                it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            )
         }
     }
 
@@ -84,7 +103,6 @@ class AodActivity : AppCompatActivity() {
 
     private fun onScreenTap(x: Float, y: Float) {
         val rank = timerSecond.let { current ->
-            // the digit just displayed is (current - 1) since we already advanced for next tick
             if (current == 1) 13 else current - 1
         }
         val quadrant = when {
