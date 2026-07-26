@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/header_title"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/header_credit"
+                android:textSize="13sp"
+                android:alpha="0.7" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1. Card photos"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+        <TextView
+            android:id="@+id/tvUploadedCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="0 / 52 uploaded" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCards"
+            android:layout_width="match_parent"
+            android:layout_height="260dp"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="2. Backdate to"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+        <RadioGroup
+            android:id="@+id/rgBackdate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <RadioButton android:id="@+id/rbH3" android:text="3 hours ago" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbH10" android:text="10 hours ago" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbH24" android:text="24 hours ago" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbD3" android:text="3 days ago" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbCustom" android:text="Custom" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        </RadioGroup>
+        <Button
+            android:id="@+id/btnCustomTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pick custom date/time"
+            android:visibility="gone" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="3. Lock screen background"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+        <Button
+            android:id="@+id/btnBackground"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Choose background photo" />
+        <TextView
+            android:id="@+id/tvBackgroundStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No background selected" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="4. Input mode"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+        <RadioGroup
+            android:id="@+id/rgMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton android:id="@+id/rbPasscode" android:text="Passcode" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbTap" android:text="Tap (AOD)" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="24dp"/>
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/btnPerform"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="PERFORM"
+            android:backgroundTint="@color/accent" />
+
+    </LinearLayout>
+</ScrollView>
