@@ -27,10 +27,18 @@ import java.util.Locale
 
 class PasscodeActivity : AppCompatActivity() {
 
+    companion object {
+        private const val INACTIVITY_TIMEOUT_MS = 10000L
+    }
+
     private val entered = StringBuilder()
     private lateinit var dots: List<View>
     private lateinit var dotsContainer: LinearLayout
+    private lateinit var blackOverlay: View
     private val handler = Handler(Looper.getMainLooper())
+    private var awake = false
+
+    private val sleepRunnable = Runnable { goToSleep() }
 
     private val clockRunnable = object : Runnable {
         override fun run() {
@@ -54,6 +62,35 @@ class PasscodeActivity : AppCompatActivity() {
         dotsContainer = findViewById(R.id.dotsContainer)
         buildDots()
         buildKeypad()
+
+        blackOverlay = findViewById(R.id.blackOverlay)
+        blackOverlay.setOnClickListener { wakeUp() }
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (awake && ev.action == android.view.MotionEvent.ACTION_DOWN) {
+            resetSleepTimer()
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    private fun wakeUp() {
+        awake = true
+        blackOverlay.visibility = View.GONE
+        resetSleepTimer()
+    }
+
+    private fun goToSleep() {
+        awake = false
+        entered.clear()
+        refreshDots()
+        blackOverlay.visibility = View.VISIBLE
+        handler.removeCallbacks(sleepRunnable)
+    }
+
+    private fun resetSleepTimer() {
+        handler.removeCallbacks(sleepRunnable)
+        handler.postDelayed(sleepRunnable, INACTIVITY_TIMEOUT_MS)
     }
 
     private fun goFullscreen() {
@@ -75,7 +112,7 @@ class PasscodeActivity : AppCompatActivity() {
     private fun updateClock() {
         val now = Calendar.getInstance()
         findViewById<TextView>(R.id.tvClock).text =
-            SimpleDateFormat("HH:mm", Locale.getDefault()).format(now.time)
+            SimpleDateFormat("h:mm", Locale.getDefault()).format(now.time)
         findViewById<TextView>(R.id.tvDate).text =
             SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(now.time)
     }
