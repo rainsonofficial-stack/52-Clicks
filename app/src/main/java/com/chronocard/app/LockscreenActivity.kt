@@ -128,12 +128,18 @@ class LockscreenActivity : AppCompatActivity() {
 
     private fun startMarquee() {
         val container = tvTrack.parent as View
+        val textWidth = tvTrack.paint.measureText(tvTrack.text.toString())
+        val textWidthPx = kotlin.math.ceil(textWidth).toInt() + 4
+
+        val lp = tvTrack.layoutParams
+        lp.width = textWidthPx
+        tvTrack.layoutParams = lp
+
         container.doOnLayout {
             val density = resources.displayMetrics.density
             val containerWidth = container.width.toFloat()
-            val textWidth = tvTrack.paint.measureText(tvTrack.text.toString())
             val startX = containerWidth
-            val endX = -textWidth
+            val endX = -textWidthPx.toFloat()
             tvTrack.x = startX
             val distance = startX - endX
             val speedPxPerSec = 40f * density
@@ -151,6 +157,7 @@ class LockscreenActivity : AppCompatActivity() {
         val ivCamera = findViewById<ImageView>(R.id.ivCamera)
         val ivPhone = findViewById<ImageView>(R.id.ivPhone)
 
+        // Rises UP from AOD position (15px below) to lockscreen position
         timeGroup.translationY = 15f
         timeGroup.alpha = 0f
 
@@ -226,6 +233,12 @@ class LockscreenActivity : AppCompatActivity() {
         rippleView.visibility = View.INVISIBLE
     }
 
+    /**
+     * The 1s ripple burst is purely visual and runs on its own. The unlock
+     * sound is intentionally started in the SAME call as the home/close call,
+     * so the "click" and the screen closing happen together instead of the
+     * sound playing first with a lag before the app actually closes.
+     */
     private fun completeUnlock(card: CardUtils.Card) {
         unlocked = true
         handler.removeCallbacksAndMessages(null)
@@ -245,12 +258,18 @@ class LockscreenActivity : AppCompatActivity() {
         burst.start()
 
         handler.postDelayed({
-            playUnlockSound()
+            playUnlockSound() // fires right alongside the home/close call below
             GalleryInserter.performInsertForCard(this, card)
-            finishAffinity()
+            goHome()
         }, BURST_MS + 50)
     }
 
+    /**
+     * Uses the application context and self-releases on completion, rather
+     * than being tied to this Activity's onDestroy(). Since playback starts
+     * in the same instant the Activity is finishing, tying its lifecycle to
+     * onDestroy() would cut the sound off almost immediately.
+     */
     private fun playUnlockSound() {
         try {
             val afd = applicationContext.assets.openFd("unlock.mp3")
@@ -261,11 +280,25 @@ class LockscreenActivity : AppCompatActivity() {
             player.prepare()
             player.start()
         } catch (_: Exception) {
+            // No sound file present — skip silently
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
+    }
+
+    /**
+     * Explicitly navigates to the real home screen before closing, rather
+     * than just finishing back to whatever the launcher's last state was.
+     */
+    private fun goHome() {
+        val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        startActivity(homeIntent)
+        finishAffinity()
     }
 }
