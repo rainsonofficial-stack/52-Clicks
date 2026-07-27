@@ -293,12 +293,12 @@ class LockscreenActivity : AppCompatActivity() {
      * Explicitly navigates to the real home screen before closing, rather
      * than just finishing back to whatever the launcher's last state was.
      */
-    private fun goHome() {
+   private fun goHome() {
         val homeIntent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_HOME)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         startActivity(homeIntent)
         finishAffinity()
-    }
+   }
 }
