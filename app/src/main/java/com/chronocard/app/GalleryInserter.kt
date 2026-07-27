@@ -2,12 +2,13 @@ package com.chronocard.app
 
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.exifinterface.media.ExifInterface
 import java.io.File
-import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -39,12 +40,18 @@ object GalleryInserter {
     }
 
     /**
-     * IMPORTANT: on scoped storage, clearing IS_PENDING triggers a MediaStore
-     * rescan that can silently reset DATE_MODIFIED (and, on Samsung/One UI,
-     * the gallery sorts by EXIF DateTimeOriginal rather than the DB column).
-     * So we (a) write real EXIF date tags into the file itself, and (b)
-     * re-assert the date columns in the SAME update call that clears
-     * IS_PENDING, so nothing overwrites them after the fact.
+     * Copies the given source image into DCIM/Camera with DATE_TAKEN /
+     * DATE_ADDED / DATE_MODIFIED all set to targetMillis.
+     *
+     * If the source photo actually came from the phone's camera, it carries
+     * a large/nonstandard EXIF block (maker notes, embedded thumbnail) that
+     * can make ExifInterface.saveAttributes() throw on some Samsung images.
+     * If that write silently fails, Android's rescan falls back to the
+     * ORIGINAL embedded DateTimeOriginal, and the backdate never takes
+     * effect. To avoid this entirely we re-encode the copy as a clean JPEG
+     * (Bitmap decode + recompress) before writing our own minimal EXIF date
+     * tags, so there's no legacy maker-note data to trip over. We preserve
+     * the source's rotation by copying its ORIENTATION tag across.
      */
     fun insertBackdatedImage(ctx: Context, sourcePath: String, targetMillis: Long): Boolean {
         val src = File(sourcePath)
@@ -68,15 +75,29 @@ object GalleryInserter {
         val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val uri = resolver.insert(collection, initialValues) ?: return false
 
-        try {
-            resolver.openOutputStream(uri)?.use { out ->
-                FileInputStream(src).use { input -> input.copyTo(out) }
-            } ?: return false
-        } catch (e: Exception) {
-            return false
+        // Read the original rotation before we strip its EXIF away.
+        val originalOrientation = try {
+            ExifInterface(sourcePath).getAttributeInt(
+                ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL
+            )
+        } catch (_: Exception) {
+            ExifInterface.ORIENTATION_NORMAL
         }
 
-        writeExifDate(ctx, uri, targetMillis)
+        val wroteCleanCopy = try {
+            val bitmap = decodeBitmap(sourcePath) ?: return false
+            resolver.openOutputStream(uri)?.use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 92, out)
+            } ?: return false
+            bitmap.recycle()
+            true
+        } catch (e: Exception) {
+            false
+        }
+        if (!wroteCleanCopy) return false
+
+        // Clean file, no legacy maker-note baggage - this write is now reliable.
+        writeExifDate(ctx, uri, targetMillis, originalOrientation)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val finalValues = ContentValues().apply {
@@ -91,7 +112,20 @@ object GalleryInserter {
         return true
     }
 
-    private fun writeExifDate(ctx: Context, uri: Uri, millis: Long) {
+    /** Decodes with downsampling for very large camera photos, to keep this fast. */
+    private fun decodeBitmap(path: String): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        var sample = 1
+        val maxDimension = 2400
+        while (bounds.outWidth / sample > maxDimension || bounds.outHeight / sample > maxDimension) {
+            sample *= 2
+        }
+        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+        return BitmapFactory.decodeFile(path, opts)
+    }
+
+    private fun writeExifDate(ctx: Context, uri: Uri, millis: Long, orientation: Int) {
         try {
             ctx.contentResolver.openFileDescriptor(uri, "rw")?.use { pfd ->
                 val exif = ExifInterface(pfd.fileDescriptor)
@@ -99,6 +133,7 @@ object GalleryInserter {
                 exif.setAttribute(ExifInterface.TAG_DATETIME_ORIGINAL, dateStr)
                 exif.setAttribute(ExifInterface.TAG_DATETIME, dateStr)
                 exif.setAttribute(ExifInterface.TAG_DATETIME_DIGITIZED, dateStr)
+                exif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation.toString())
                 exif.saveAttributes()
             }
         } catch (_: Exception) {
