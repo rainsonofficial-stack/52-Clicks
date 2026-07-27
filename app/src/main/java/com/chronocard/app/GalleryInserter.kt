@@ -33,26 +33,22 @@ object GalleryInserter {
             SetupPrefs.Backdate.CUSTOM -> 0L
         }
 
+        // Extra hour-level variation on top of the minute jitter, but only for the
+        // larger presets (24h / 3 days) — a couple hours of drift there still reads
+        // naturally as "yesterday" / "a few days ago", whereas doing the same to the
+        // 3h/10h presets would undercut what the performer explicitly picked.
+        val extraHourJitter = if (option == SetupPrefs.Backdate.H24 || option == SetupPrefs.Backdate.D3) {
+            val hours = Random.nextInt(2, 5) // 2, 3, or 4 hours
+            val sign = if (Random.nextBoolean()) 1 else -1
+            sign * hours * 60 * 60 * 1000L
+        } else 0L
+
         val jitterMillis = Random.nextLong(-20 * 60 * 1000L, 20 * 60 * 1000L)
-        var target = now - baseOffsetMillis + jitterMillis
+        var target = now - baseOffsetMillis + jitterMillis + extraHourJitter
         if (target >= now) target = now - 60_000
         return target
     }
 
-    /**
-     * Copies the given source image into DCIM/Camera with DATE_TAKEN /
-     * DATE_ADDED / DATE_MODIFIED all set to targetMillis.
-     *
-     * If the source photo actually came from the phone's camera, it carries
-     * a large/nonstandard EXIF block (maker notes, embedded thumbnail) that
-     * can make ExifInterface.saveAttributes() throw on some Samsung images.
-     * If that write silently fails, Android's rescan falls back to the
-     * ORIGINAL embedded DateTimeOriginal, and the backdate never takes
-     * effect. To avoid this entirely we re-encode the copy as a clean JPEG
-     * (Bitmap decode + recompress) before writing our own minimal EXIF date
-     * tags, so there's no legacy maker-note data to trip over. We preserve
-     * the source's rotation by copying its ORIENTATION tag across.
-     */
     fun insertBackdatedImage(ctx: Context, sourcePath: String, targetMillis: Long): Boolean {
         val src = File(sourcePath)
         if (!src.exists()) return false
@@ -75,7 +71,6 @@ object GalleryInserter {
         val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val uri = resolver.insert(collection, initialValues) ?: return false
 
-        // Read the original rotation before we strip its EXIF away.
         val originalOrientation = try {
             ExifInterface(sourcePath).getAttributeInt(
                 ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL
@@ -96,7 +91,6 @@ object GalleryInserter {
         }
         if (!wroteCleanCopy) return false
 
-        // Clean file, no legacy maker-note baggage - this write is now reliable.
         writeExifDate(ctx, uri, targetMillis, originalOrientation)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -112,7 +106,6 @@ object GalleryInserter {
         return true
     }
 
-    /** Decodes with downsampling for very large camera photos, to keep this fast. */
     private fun decodeBitmap(path: String): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(path, bounds)
@@ -137,7 +130,6 @@ object GalleryInserter {
                 exif.saveAttributes()
             }
         } catch (_: Exception) {
-            // Best-effort — the MediaStore DATE_TAKEN column is still set as a fallback.
         }
     }
 
