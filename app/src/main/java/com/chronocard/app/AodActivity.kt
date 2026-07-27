@@ -20,7 +20,7 @@ import java.util.*
 class AodActivity : AppCompatActivity() {
 
     private val handler = Handler(Looper.getMainLooper())
-    private var timerSecond = 1
+    private var timerSecond = 1 // cycles 1..13, i.e. "3:01".."3:13"
     private lateinit var tvTimer: TextView
     private lateinit var tvClock: TextView
     private lateinit var tvDate: TextView
@@ -85,15 +85,26 @@ class AodActivity : AppCompatActivity() {
 
     private fun startMarquee() {
         val container = tvTrack.parent as View
+        val textWidth = tvTrack.paint.measureText(tvTrack.text.toString())
+        val textWidthPx = kotlin.math.ceil(textWidth).toInt() + 4
+
+        // Force the TextView to measure at its full natural width, not the
+        // narrow widget's width — otherwise Android compresses/clips the
+        // text to fit the immediate (narrow) parent before we ever get to
+        // scroll it, which is what was truncating it regardless of the
+        // x-translation.
+        val lp = tvTrack.layoutParams
+        lp.width = textWidthPx
+        tvTrack.layoutParams = lp
+
         container.doOnLayout {
             val density = resources.displayMetrics.density
             val containerWidth = container.width.toFloat()
-            val textWidth = tvTrack.paint.measureText(tvTrack.text.toString())
-            val startX = containerWidth // just off the right edge of the widget itself
-            val endX = -textWidth
+            val startX = containerWidth
+            val endX = -textWidthPx.toFloat()
             tvTrack.x = startX
             val distance = startX - endX
-            val speedPxPerSec = 40f * density // slower, easier to read mid-scroll
+            val speedPxPerSec = 40f * density
             val durationMs = ((distance / speedPxPerSec) * 1000).toLong().coerceAtLeast(4000L)
             val anim = ObjectAnimator.ofFloat(tvTrack, "x", startX, endX)
             anim.duration = durationMs
@@ -111,6 +122,7 @@ class AodActivity : AppCompatActivity() {
 
     private fun onScreenTap(x: Float, y: Float) {
         val rank = timerSecond.let { current ->
+            // the digit just displayed is (current - 1) since we already advanced for next tick
             if (current == 1) 13 else current - 1
         }
         val quadrant = when {
