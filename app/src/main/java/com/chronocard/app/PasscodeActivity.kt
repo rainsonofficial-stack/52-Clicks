@@ -54,7 +54,6 @@ class PasscodeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_passcode)
         goFullscreen()
 
-        // Background image
         val ivBackground = findViewById<ImageView>(R.id.ivBackground)
         SetupPrefs.getBackground(this)?.let { path ->
             ivBackground.setImageURI(Uri.fromFile(File(path)))
@@ -198,6 +197,7 @@ class PasscodeActivity : AppCompatActivity() {
         if (entered.length == 4) {
             val card = CardUtils.decodePasscode(entered.toString())
             if (card != null) {
+                playUnlockSound()
                 GalleryInserter.performInsertForCard(this, card)
                 goHome()
             } else {
@@ -259,9 +259,28 @@ class PasscodeActivity : AppCompatActivity() {
     private fun goHome() {
         val homeIntent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_HOME)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         startActivity(homeIntent)
         finishAffinity()
+    }
+
+    /**
+     * Uses the application context and self-releases on completion, rather
+     * than being tied to this Activity's onDestroy() — playback starts in
+     * the same instant the Activity is finishing.
+     */
+    private fun playUnlockSound() {
+        try {
+            val afd = applicationContext.assets.openFd("unlock.mp3")
+            val player = android.media.MediaPlayer()
+            player.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+            player.setOnCompletionListener { it.release() }
+            player.setOnErrorListener { mp, _, _ -> mp.release(); true }
+            player.prepare()
+            player.start()
+        } catch (_: Exception) {
+            // No sound file present — skip silently
+        }
     }
 }
