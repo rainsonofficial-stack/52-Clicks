@@ -28,6 +28,37 @@
             android:textColor="@color/aod_dim"
             android:textSize="16sp"
             android:layout_marginTop="4dp" />
+
+        <!-- Optional app-icon row. Requires ic_notif_youtube.png, ic_notif_chrome.png,
+             ic_notif_whatsapp.png in res/drawable (transparent-background silhouettes).
+             Delete this LinearLayout block entirely if you don't add those files. -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_notif_youtube"
+                android:tint="@color/aod_dim" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="14dp"
+                android:src="@drawable/ic_notif_chrome"
+                android:tint="@color/aod_dim" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="14dp"
+                android:src="@drawable/ic_notif_whatsapp"
+                android:tint="@color/aod_dim" />
+        </LinearLayout>
     </LinearLayout>
 
     <ImageView
@@ -36,41 +67,60 @@
         android:layout_height="56dp"
         android:layout_gravity="center_horizontal|bottom"
         android:layout_marginBottom="155dp"
-        android:src="@drawable/ic_fingerprint"
+        android:src="@drawable/finger"
+        android:tint="@android:color/white"
+        android:scaleType="fitCenter"
         android:alpha="0.55" />
 
+    <!-- Widget is 50% screen width, centered -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_marginBottom="44dp"
-        android:layout_marginHorizontal="20dp"
-        android:orientation="vertical"
-        android:background="@drawable/bg_music_widget_aod"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="10dp">
+        android:orientation="horizontal">
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:clipChildren="true">
-            <TextView
-                android:id="@+id/tvTrack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/aod_dim"
-                android:textSize="13sp"
-                android:singleLine="true" />
-        </FrameLayout>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
 
-        <TextView
-            android:id="@+id/tvTimer"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/aod_dim"
-            android:textSize="13sp" />
+            android:layout_weight="2"
+            android:orientation="vertical"
+            android:background="@drawable/bg_music_widget_aod"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="10dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:clipChildren="true">
+                <TextView
+                    android:id="@+id/tvTrack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/aod_dim"
+                    android:textSize="13sp"
+                    android:singleLine="true" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tvTimer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/aod_dim"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
     </LinearLayout>
 
 </FrameLayout>
