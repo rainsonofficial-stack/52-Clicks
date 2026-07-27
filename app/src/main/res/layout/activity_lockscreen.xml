@@ -102,13 +102,22 @@
         android:tint="@android:color/white"
         android:scaleType="fitCenter" />
 
-    <!-- Widget is 50% screen width, centered -->
+    <!-- Phone icon, widget (50% width, centered), camera icon - all in one row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_marginBottom="44dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="20dp">
+
+        <ImageView
+            android:id="@+id/ivPhone"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_phone"
+            android:alpha="0" />
 
         <View
             android:layout_width="0dp"
@@ -124,41 +133,18 @@
             android:paddingHorizontal="14dp"
             android:paddingVertical="10dp">
 
-            <LinearLayout
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:id="@+id/ivPhone"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_phone"
-                    android:alpha="0" />
-
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="20dp"
-                    android:layout_weight="1"
-                    android:layout_marginHorizontal="10dp"
-                    android:clipChildren="true">
-                    <TextView
-                        android:id="@+id/tvTrack"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@android:color/white"
-                        android:textSize="13sp"
-                        android:singleLine="true" />
-                </FrameLayout>
-
-                <ImageView
-                    android:id="@+id/ivCamera"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_camera"
-                    android:alpha="0" />
-            </LinearLayout>
+                android:layout_height="20dp"
+                android:clipChildren="true">
+                <TextView
+                    android:id="@+id/tvTrack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp"
+                    android:singleLine="true" />
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/tvTimer"
@@ -174,6 +160,13 @@
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/ivCamera"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_camera"
+            android:alpha="0" />
     </LinearLayout>
 
 </FrameLayout>
