@@ -67,4 +67,14 @@
             android:layout_marginTop="20dp" />
 
     </LinearLayout>
+
+    <!-- Starts fully opaque; a tap anywhere reveals the passcode screen beneath. -->
+    <View
+        android:id="@+id/blackOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:clickable="true"
+        android:focusable="true" />
+
 </FrameLayout>
