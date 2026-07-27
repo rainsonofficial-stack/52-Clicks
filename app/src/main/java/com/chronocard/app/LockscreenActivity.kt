@@ -30,6 +30,7 @@ class LockscreenActivity : AppCompatActivity() {
         private const val EXTRA_SUIT = "extra_suit"
         private const val HOLD_MS = 500L
         private const val INACTIVITY_TIMEOUT_MS = 10000L
+        private const val BURST_MS = 800L
 
         fun launch(ctx: Context, card: CardUtils.Card) {
             val i = Intent(ctx, LockscreenActivity::class.java)
@@ -48,7 +49,6 @@ class LockscreenActivity : AppCompatActivity() {
     private lateinit var tvTimer: TextView
     private lateinit var ivFingerprint: ImageView
     private lateinit var rippleView: View
-    private var mediaPlayer: MediaPlayer? = null
 
     private val inactivityRunnable = Runnable { revertToInput() }
 
@@ -143,7 +143,6 @@ class LockscreenActivity : AppCompatActivity() {
         val ivCamera = findViewById<ImageView>(R.id.ivCamera)
         val ivPhone = findViewById<ImageView>(R.id.ivPhone)
 
-        // Rises UP from AOD position (15px below) to lockscreen position
         timeGroup.translationY = 15f
         timeGroup.alpha = 0f
 
@@ -170,7 +169,7 @@ class LockscreenActivity : AppCompatActivity() {
     private fun updateClock() {
         val now = Calendar.getInstance()
         findViewById<TextView>(R.id.tvClock).text =
-            SimpleDateFormat("HH:mm", Locale.getDefault()).format(now.time)
+            SimpleDateFormat("h:mm", Locale.getDefault()).format(now.time)
         findViewById<TextView>(R.id.tvDate).text =
             SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(now.time)
     }
@@ -219,6 +218,12 @@ class LockscreenActivity : AppCompatActivity() {
         rippleView.visibility = View.INVISIBLE
     }
 
+    /**
+     * The 1s ripple burst is purely visual and runs on its own. The unlock
+     * sound is intentionally started in the SAME call as finishAffinity(),
+     * so the "click" and the screen closing happen together instead of the
+     * sound playing first with a lag before the app actually closes.
+     */
     private fun completeUnlock(card: CardUtils.Card) {
         unlocked = true
         handler.removeCallbacksAndMessages(null)
@@ -234,25 +239,31 @@ class LockscreenActivity : AppCompatActivity() {
             ObjectAnimator.ofFloat(rippleView, "scaleY", 1f, 5f),
             ObjectAnimator.ofFloat(rippleView, "alpha", 0.7f, 0f)
         )
-        burst.duration = 800
+        burst.duration = BURST_MS
         burst.start()
 
-        playUnlockSound()
-
         handler.postDelayed({
+            playUnlockSound()
             GalleryInserter.performInsertForCard(this, card)
             finishAffinity()
-        }, 850)
+        }, BURST_MS + 50)
     }
 
+    /**
+     * Uses the application context and self-releases on completion, rather
+     * than being tied to this Activity's onDestroy(). Since playback starts
+     * in the same instant the Activity is finishing, tying its lifecycle to
+     * onDestroy() would cut the sound off almost immediately.
+     */
     private fun playUnlockSound() {
         try {
-            val afd = assets.openFd("unlock.mp3")
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-                prepare()
-                start()
-            }
+            val afd = applicationContext.assets.openFd("unlock.mp3")
+            val player = MediaPlayer()
+            player.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+            player.setOnCompletionListener { it.release() }
+            player.setOnErrorListener { mp, _, _ -> mp.release(); true }
+            player.prepare()
+            player.start()
         } catch (_: Exception) {
             // No sound file present — skip silently
         }
@@ -261,7 +272,5 @@ class LockscreenActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
-        mediaPlayer?.release()
-        mediaPlayer = null
     }
 }
