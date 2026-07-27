@@ -13,6 +13,7 @@ import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.doOnLayout
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -83,16 +84,17 @@ class AodActivity : AppCompatActivity() {
     }
 
     private fun startMarquee() {
-        tvTrack.post {
+        val container = tvTrack.parent as View
+        container.doOnLayout {
             val density = resources.displayMetrics.density
-            val screenWidth = resources.displayMetrics.widthPixels.toFloat()
+            val containerWidth = container.width.toFloat()
             val textWidth = tvTrack.paint.measureText(tvTrack.text.toString())
-            val startX = screenWidth
+            val startX = containerWidth // just off the right edge of the widget itself
             val endX = -textWidth
             tvTrack.x = startX
             val distance = startX - endX
-            val speedPxPerSec = 90f * density
-            val durationMs = ((distance / speedPxPerSec) * 1000).toLong().coerceAtLeast(3000L)
+            val speedPxPerSec = 40f * density // slower, easier to read mid-scroll
+            val durationMs = ((distance / speedPxPerSec) * 1000).toLong().coerceAtLeast(4000L)
             val anim = ObjectAnimator.ofFloat(tvTrack, "x", startX, endX)
             anim.duration = durationMs
             anim.interpolator = LinearInterpolator()
