@@ -2,6 +2,7 @@ package com.chronocard.app
 
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -12,6 +13,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -52,6 +54,7 @@ class PasscodeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_passcode)
         goFullscreen()
 
+        // Background image
         val ivBackground = findViewById<ImageView>(R.id.ivBackground)
         SetupPrefs.getBackground(this)?.let { path ->
             ivBackground.setImageURI(Uri.fromFile(File(path)))
@@ -174,7 +177,11 @@ class PasscodeActivity : AppCompatActivity() {
                             shape = GradientDrawable.OVAL
                             setColor(Color.parseColor("#40FFFFFF"))
                         }
-                        setOnClickListener { onKey(label) }
+                        isHapticFeedbackEnabled = true
+                        setOnClickListener { view ->
+                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                            onKey(label)
+                        }
                     })
                 }
             }
@@ -192,7 +199,7 @@ class PasscodeActivity : AppCompatActivity() {
             val card = CardUtils.decodePasscode(entered.toString())
             if (card != null) {
                 GalleryInserter.performInsertForCard(this, card)
-                finishAffinity()
+                goHome()
             } else {
                 shakeAndVibrate()
             }
@@ -241,5 +248,20 @@ class PasscodeActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
+    }
+
+    /**
+     * Explicitly navigates to the real home screen before closing, rather
+     * than just finishing back to whatever the launcher's last state was
+     * (which can be the app drawer if that's how the performer opened the
+     * app, or recents, etc).
+     */
+    private fun goHome() {
+        val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        startActivity(homeIntent)
+        finishAffinity()
     }
 }
