@@ -30,7 +30,7 @@ class AodActivity : AppCompatActivity() {
         override fun run() {
             tvTimer.text = String.format("%d:%02d", 3, timerSecond)
             timerSecond = if (timerSecond >= 13) 1 else timerSecond + 1
-            handler.postDelayed(this, 1000)
+            handler.postDelayed(this, 1500)
         }
     }
 
@@ -84,11 +84,17 @@ class AodActivity : AppCompatActivity() {
 
     private fun startMarquee() {
         tvTrack.post {
-            val parentWidth = (tvTrack.parent as View).width.toFloat().takeIf { it > 0 } ?: 400f
+            val density = resources.displayMetrics.density
+            val screenWidth = resources.displayMetrics.widthPixels.toFloat()
             val textWidth = tvTrack.paint.measureText(tvTrack.text.toString())
-            tvTrack.x = parentWidth
-            val anim = ObjectAnimator.ofFloat(tvTrack, "x", parentWidth, -textWidth)
-            anim.duration = 6000L + (textWidth * 8).toLong()
+            val startX = screenWidth
+            val endX = -textWidth
+            tvTrack.x = startX
+            val distance = startX - endX
+            val speedPxPerSec = 90f * density
+            val durationMs = ((distance / speedPxPerSec) * 1000).toLong().coerceAtLeast(3000L)
+            val anim = ObjectAnimator.ofFloat(tvTrack, "x", startX, endX)
+            anim.duration = durationMs
             anim.interpolator = LinearInterpolator()
             anim.repeatCount = ValueAnimator.INFINITE
             anim.start()
@@ -97,7 +103,7 @@ class AodActivity : AppCompatActivity() {
 
     private fun updateClock() {
         val now = Calendar.getInstance()
-        tvClock.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(now.time)
+        tvClock.text = SimpleDateFormat("h:mm", Locale.getDefault()).format(now.time)
         tvDate.text = SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(now.time)
     }
 
